@@ -19,8 +19,17 @@ jobs:
     - name: Deploy to Server using SSH with password
       run: |
         sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd /home/jobin/test
-          git reset --hard
-          git pull origin main
+          cd /home/jobin/test || exit 1
+
+          echo "--- Git Info ---"
+          git status
+          git fetch origin
+          git checkout main
+          git reset --hard origin/main
+
+          echo "--- Installing dependencies ---"
+          npm install
+
+          echo "--- Restarting PM2 ---"
           pm2 restart app || pm2 start app.js --name app
         EOF
