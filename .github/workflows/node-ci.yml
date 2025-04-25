@@ -19,7 +19,7 @@ jobs:
       - name: Deploy via SSH using username & password
         run: |
           sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
-            cd /var/www/html &&
+            cd /home/jobin/test &&
             git pull origin main &&
             npm install &&
             pm2 restart app
