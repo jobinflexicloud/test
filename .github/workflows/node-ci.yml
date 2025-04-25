@@ -1,4 +1,4 @@
-name: Deploy App Using Username and Password
+name: Deploy to Server
 
 on:
   push:
@@ -10,16 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Install sshpass
-      run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
-    - name: Deploy to Server using SSH with password
-      run: |
-        sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ~/test
-          git pull origin main
-          pm2 restart app || pm2 start app.js --name app
-        EOF
+      - name: Deploy via SSH using username & password
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
+            cd /var/www/html &&
+            git pull origin main &&
+            npm install &&
+            pm2 restart app
+          "
