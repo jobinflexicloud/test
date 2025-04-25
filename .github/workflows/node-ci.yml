@@ -1,35 +1,21 @@
-name: Deploy App Using Username and Password
+- name: Deploy to Server using SSH with password
+  run: |
+    sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+      cd /home/jobin/test || exit 1
 
-on:
-  push:
-    branches:
-      - main
+      echo "✅ Marking directory as safe"
+      git config --global --add safe.directory /home/jobin/test
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+      echo "📥 Pulling latest code"
+      git fetch origin
+      git checkout main
+      git reset --hard origin/main
 
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      echo "📦 Installing dependencies"
+      npm install
 
-    - name: Install sshpass
-      run: sudo apt-get update && sudo apt-get install -y sshpass
+      echo "🚀 Restarting PM2 app"
+      pm2 restart app || pm2 start app.js --name app
 
-    - name: Deploy to Server using SSH with password
-      run: |
-        sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd /home/jobin/test || exit 1
-
-          echo "--- Git Info ---"
-          git status
-          git fetch origin
-          git checkout main
-          git reset --hard origin/main
-
-          echo "--- Installing dependencies ---"
-          npm install
-
-          echo "--- Restarting PM2 ---"
-          pm2 restart app || pm2 start app.js --name app
-        EOF
+      echo "✅ Deployment done"
+    EOF
